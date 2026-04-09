@@ -1,0 +1,381 @@
+﻿<mat-sidenav-container class="layout">
+  <mat-sidenav mode="side" opened class="sidenav">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-text">Resume Lab</div>
+    </div>
+
+    <nav class="nav">
+      <a class="nav-item" routerLink="/templates">Templates</a>
+      <a class="nav-item" [class.active]="currentSection === 'personal'" (click)="setSection('personal')">Personal</a>
+      <a class="nav-item" [class.active]="currentSection === 'education'" (click)="setSection('education')">Education</a>
+      <a class="nav-item" [class.active]="currentSection === 'experience'" (click)="setSection('experience')">Experience</a>
+      <a class="nav-item" [class.active]="currentSection === 'projects'" (click)="setSection('projects')">Projects</a>
+      <a class="nav-item" [class.active]="currentSection === 'skills'" (click)="setSection('skills')">Skills</a>
+      <a class="nav-item" [class.active]="currentSection === 'done'" (click)="setSection('done')">Preview</a>
+    </nav>
+
+    <button mat-stroked-button class="logout" (click)="logout()">Logout</button>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar class="topbar">
+      <div class="title">
+        <h1>Resume Builder</h1>
+        <p>Build a clean, ATS-friendly resume with live preview.</p>
+      </div>
+      <button mat-raised-button color="accent" (click)="downloadPDF()">Download PDF</button>
+    </mat-toolbar>
+
+    <div class="content">
+      <mat-card class="panel">
+        <mat-card-title class="card-title">Fill Details</mat-card-title>
+        <mat-card-content>
+          <div *ngIf="currentSection === 'personal'">
+            <form [formGroup]="personalForm" autocomplete="off">
+              <div class="grid">
+                <div class="field">
+                  <label>Full Name*</label>
+                  <input formControlName="name" />
+                  <div class="field-error" *ngIf="personalForm.controls.name.touched && personalForm.controls.name.invalid">Required</div>
+                </div>
+
+                <div class="field">
+                  <label>Title*</label>
+                  <input formControlName="title" />
+                  <div class="field-error" *ngIf="personalForm.controls.title.touched && personalForm.controls.title.invalid">Required</div>
+                </div>
+
+                <div class="field">
+                  <label>Email*</label>
+                  <input formControlName="email" />
+                  <div class="field-error" *ngIf="personalForm.controls.email.touched && personalForm.controls.email.hasError('required')">Required</div>
+                  <div class="field-error" *ngIf="personalForm.controls.email.touched && personalForm.controls.email.hasError('email')">Invalid email</div>
+                </div>
+
+                <div class="field">
+                  <label>Phone*</label>
+                  <input formControlName="phone" />
+                  <div class="field-error" *ngIf="personalForm.controls.phone.touched && personalForm.controls.phone.hasError('required')">Required</div>
+                  <div class="field-error" *ngIf="personalForm.controls.phone.touched && personalForm.controls.phone.hasError('pattern')">Invalid phone</div>
+                </div>
+
+                <div class="field">
+                  <label>Location*</label>
+                  <input formControlName="location" />
+                  <div class="field-error" *ngIf="personalForm.controls.location.touched && personalForm.controls.location.invalid">Required</div>
+                </div>
+
+                <div class="field">
+                  <label>LinkedIn</label>
+                  <input formControlName="linkedIn" />
+                </div>
+
+                <div class="field full">
+                  <label>Professional Summary*</label>
+                  <textarea rows="3" formControlName="summary"></textarea>
+                  <div class="field-error" *ngIf="personalForm.controls.summary.touched && personalForm.controls.summary.hasError('required')">Required</div>
+                  <div class="field-error" *ngIf="personalForm.controls.summary.touched && personalForm.controls.summary.hasError('minlength')">Min 20 chars</div>
+                </div>
+                <div class="field full" *ngIf="showPhotoForSelectedTemplate()">
+                  <label>Profile Photo (optional)</label>
+                  <div class="photo-row">
+                    <input #wizardPhotoInput type="file" accept="image/*" (change)="onProfileImageSelected($event)" />
+                    <button class="upload-btn" type="button" (click)="wizardPhotoInput.click()">
+                      Upload Photo
+                    </button>
+                    <button class="remove-btn" type="button" (click)="clearProfileImage()" [disabled]="!profileImage">
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="actions">
+                <span class="error" *ngIf="saveError">{{ saveError }}</span>
+                <button mat-raised-button color="primary" type="button" (click)="savePersonal()" [disabled]="isSaving">
+                  Save & Next
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div *ngIf="currentSection === 'education'">
+            <form [formGroup]="educationForm" autocomplete="off">
+              <div formArrayName="items" class="stack">
+                <div class="stack-item" *ngFor="let item of educationItems.controls; let i = index" [formGroupName]="i">
+                  <div class="grid">                
+                <div class="field">
+                  <label>School/College*</label>
+                  <input formControlName="school" />
+                  <div class="field-error" *ngIf="item.get('school')?.touched && item.get('school')?.invalid">Required</div>
+                </div>
+
+                <div class="field">
+                  <label>Degree*</label>
+                  <input formControlName="degree" />
+                  <div class="field-error" *ngIf="item.get('degree')?.touched && item.get('degree')?.invalid">Required</div>
+                </div>
+
+                <div class="field">
+                  <label>Field</label>
+                  <input formControlName="field" />
+                </div>
+
+                <div class="field">
+                  <label>Start*</label>
+                  <input type="number" formControlName="start" />
+                  <div class="field-error" *ngIf="item.get('start')?.touched && item.get('start')?.hasError('required')">Required</div>
+                  <div class="field-error" *ngIf="item.get('start')?.touched && (item.get('start')?.hasError('min') || item.get('start')?.hasError('max'))">Invalid year</div>
+                </div>
+                 <div class="field">
+                  <label>End*</label>
+                  <input type="number" formControlName="end" />
+                  <div class="field-error" *ngIf="item.get('end')?.touched && item.get('end')?.hasError('required')">Required</div>
+                  <div class="field-error" *ngIf="item.get('end')?.touched && (item.get('end')?.hasError('min') || item.get('end')?.hasError('max'))">Invalid year</div>
+                </div>
+                <div class="field">
+                  <label>Grade/CGPA*</label>
+                  <input formControlName="grade" />
+                  <div class="field-error" *ngIf="item.get('grade')?.touched && item.get('grade')?.invalid">Required</div>
+                </div>
+                  </div>
+                  <button class="link" type="button" (click)="removeEducation(i)" *ngIf="educationItems.length > 1">Remove</button>
+                </div>
+              </div>
+              <button class="link" type="button" (click)="addEducation()">+ Add Education</button>
+
+              <div class="actions">
+                <button mat-stroked-button type="button" (click)="setSection('personal')">Back</button>
+                <button mat-raised-button color="primary" type="button" (click)="saveEducation()" [disabled]="isSaving">
+                  Save & Next
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div *ngIf="currentSection === 'experience'">
+            <form [formGroup]="experienceForm" autocomplete="off">
+              <div formArrayName="items" class="stack">
+                <div class="stack-item" *ngFor="let item of experienceItems.controls; let i = index" [formGroupName]="i">
+                  <div class="grid">
+                    <div class="field">
+                      <label>Company*</label>
+                      <input formControlName="company" />
+                    </div>
+                    <div class="field">
+                      <label>Role*</label>
+                      <input formControlName="role" />
+                    </div>
+                    <div class="field">
+                      <label>Start*</label>
+                      <input formControlName="start" placeholder="Jan 2022" />
+                    </div>
+                    <div class="field">
+                      <label>End</label>
+                      <input formControlName="end" placeholder="Present" />
+                    </div>
+                    <div class="field full">
+                      <label>Highlights</label>
+                      <textarea rows="2" formControlName="highlights" placeholder="Built a design system..."></textarea>
+                    </div>
+                  </div>
+                  <button class="link" type="button" (click)="removeExperience(i)" *ngIf="experienceItems.length > 1">Remove</button>
+                </div>
+              </div>
+              <button class="link" type="button" (click)="addExperience()">+ Add Experience</button>
+
+              <div class="actions">
+                <button mat-stroked-button type="button" (click)="setSection('education')">Back</button>
+                <button mat-raised-button color="primary" type="button" (click)="saveExperience()" [disabled]="isSaving">
+                  Save & Next
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div *ngIf="currentSection === 'projects'">
+            <form [formGroup]="projectsForm" autocomplete="off">
+              <div formArrayName="items" class="stack">
+                <div class="stack-item" *ngFor="let item of projectItems.controls; let i = index" [formGroupName]="i">
+                  <div class="grid">
+                    <div class="field">
+                      <label>Project Name*</label>
+                      <input formControlName="name" />
+                    </div>
+                    <div class="field">
+                      <label>Role*</label>
+                      <input formControlName="role" />
+                    </div>
+                    <div class="field full">
+                      <label>Description</label>
+                      <textarea rows="2" formControlName="description" placeholder="Built a portfolio..."></textarea>
+                    </div>
+                    <div class="field full">
+                      <label>Tech</label>
+                      <input formControlName="tech" placeholder="Angular, .NET, MySQL" />
+                    </div>
+                  </div>
+                  <button class="link" type="button" (click)="removeProject(i)" *ngIf="projectItems.length > 1">Remove</button>
+                </div>
+              </div>
+              <button class="link" type="button" (click)="addProject()">+ Add Project</button>
+
+              <div class="actions">
+                <button mat-stroked-button type="button" (click)="setSection('experience')">Back</button>
+                <button mat-raised-button color="primary" type="button" (click)="saveProjects()" [disabled]="isSaving">
+                  Save & Next
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div *ngIf="currentSection === 'skills'">
+            <div class="grid">
+              <div class="field full">
+                <label>Technical Skills (comma separated)</label>
+                <input [formControl]="technicalForm.controls.skillInput" />
+              </div>
+              <button mat-raised-button color="primary" type="button" (click)="addSkill()">Add</button>
+            </div>
+
+            <mat-chip-listbox>
+              <mat-chip *ngFor="let skill of skills" (removed)="removeSkill(skill)" removable>
+                {{ skill }}
+                <mat-icon matChipRemove>cancel</mat-icon>
+              </mat-chip>
+            </mat-chip-listbox>
+
+            <div class="actions">
+              <button mat-stroked-button type="button" (click)="setSection('projects')">Back</button>
+              <button mat-raised-button color="primary" type="button" (click)="saveTechnical()" [disabled]="isSaving">
+                Save & Finish
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="currentSection === 'done'" class="done">
+            <h3>All done!</h3>
+            <p>Your resume details have been saved. You can revisit any section to edit.</p>
+            <button mat-raised-button color="accent" type="button" (click)="setSection('personal')">Edit Details</button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="preview">
+        <mat-card-title class="card-title">Live Preview</mat-card-title>
+        <div #pdfcontent class="preview-sheet" [attr.data-template]="templateService.selectedTemplate"
+             [ngStyle]="{'--accent': templateService.selectedTheme.accent, '--accent-2': templateService.selectedTheme.accent2}">
+          <aside class="preview-sidebar">
+            <div class="side-block">
+              <div class="side-title">Contact</div>
+              <div class="side-text">{{ personalForm.value.email || 'you@email.com' }}</div>
+              <div class="side-text">{{ personalForm.value.phone || '+91 00000 00000' }}</div>
+              <div class="side-text">{{ personalForm.value.location || 'Your City' }}</div>
+              <div class="side-text">{{ personalForm.value.linkedIn || 'linkedin.com/in/you' }}</div>
+            </div>
+
+            <div class="side-block">
+              <div class="side-title">Skills</div>
+              <div class="chip-row">
+                <span class="chip" *ngFor="let skill of skills">{{ skill }}</span>
+              </div>
+            </div>
+
+            <div class="side-block">
+              <div class="side-title">Education</div>
+              <div class="side-text" *ngFor="let edu of educationItems.value">
+                {{ (edu.degree || 'B.Tech') + (edu.field ? ' - ' + edu.field : '') + ' - ' + (edu.school || 'NIT Surathkal') }} 
+              </div>
+              <div class="side-text" *ngFor="let edu of educationItems.value">
+                {{ edu.start || 2021 }} - {{ edu.end || 'Present' }} 
+              </div>
+              <div class="side-text" *ngFor="let edu of educationItems.value">
+                {{ edu.grade || 'CGPA : 86%' }}
+              </div>
+            </div>
+          </aside>
+
+          <div class="preview-body">
+            <div class="header">
+               <ng-container *ngIf="profileImage">
+              <div class="avatar" *ngIf="showPhotoForSelectedTemplate()">   
+                <img [src]="profileImage || defaultProfileImage" alt="Profile" />     
+              </div>
+              </ng-container>
+              <div class="title-stack">
+                <div class="name">{{ name }}</div>
+                <div class="subtitle">{{ title }}</div>
+              </div>
+            </div>
+
+            <div class="body-contact">
+              <div class="contact-row">
+                <span>{{ personalForm.value.email || 'you@email.com' }}</span>
+                <span>{{ personalForm.value.phone || '+91 00000 00000' }}</span>
+                <span>{{ personalForm.value.location || 'Your City' }}</span>
+              </div>
+              <div class="contact-row">
+                <span>{{ personalForm.value.linkedIn || 'linkedin.com/in/you' }}</span>
+              </div>
+            </div>
+
+            <div class="summary" *ngIf="personalForm.value.summary">
+              {{ personalForm.value.summary }}
+            </div>
+
+            <div class="body-grid">
+              <div class="section section-experience">
+                <div class="section-title">Experience</div>
+                <div class="section-rule"></div>
+                <div class="item" *ngFor="let item of experienceItems.value">
+                  <div class="item-header">
+                    <div class="item-title">{{ item.role }}</div>
+                    <div class="item-meta">{{ item.company }}</div>
+                    <div class="item-dates">{{ item.start }} - {{ item.end || 'Present' }}</div>
+                  </div>
+                  <div class="item-body" *ngIf="item.highlights">{{ item.highlights }}</div>
+                </div>
+              </div>
+
+              <div class="section section-projects">
+                <div class="section-title">Projects</div>
+                <div class="section-rule"></div>
+                <div class="item" *ngFor="let item of projectItems.value">
+                  <div class="item-header">
+                    <div class="item-title">{{ item.name }}</div>
+                    <div class="item-meta">{{ item.role }}</div>
+                  </div>
+                  <div class="item-body" *ngIf="item.description">{{ item.description }}</div>
+                  <div class="item-tech" *ngIf="item.tech">Tech: {{ item.tech }}</div>
+                </div>
+              </div>
+
+              <div class="section section-skills">
+                <div class="section-title">Skills</div>
+                <div class="section-rule"></div>
+                <div class="chip-row">
+                  <span class="chip" *ngFor="let skill of skills">{{ skill }}</span>
+                </div>
+              </div>
+
+              <div class="section section-education">
+                <div class="section-title">Education</div>
+                <div class="section-rule"></div>
+                <div class="item compact" *ngFor="let edu of educationItems.value">
+                  <div class="item-title">{{ (edu.degree || 'B.Tech') + (edu.field ? ' - '+ edu.field : '') + ' - ' + (edu.school || 'NIT Surathkal') }}</div>
+                  <div class="item-meta">{{ (edu.start || 2021) + ' - ' + (edu.end || 'Present') }}</div>
+                  <div class="item-meta">CGPA : {{ edu.grade || ' 86%' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+
+
+

@@ -1,0 +1,27 @@
+<div class="templates">
+  <div class="section-title">{{ title }}</div>
+  <div class="template-row">
+    <button
+      class="template"
+      type="button"
+      *ngFor="let template of templates"
+      [class.active]="selectedTemplate === template.id"
+      (click)="templateSelect.emit(template.id)">
+      {{ template.label }}
+    </button>
+  </div>
+  <div class="theme-row">
+    <div class="theme-label">Theme Color</div>
+    <div class="theme-swatches">
+      <button
+        class="theme-swatch"
+        type="button"
+        *ngFor="let theme of themes"
+        [class.active]="selectedTheme?.id === theme.id"
+        [style.background]="theme.accent"
+        (click)="themeSelect.emit(theme)"
+        [attr.aria-label]="theme.label">
+      </button>
+    </div>
+  </div>
+</div>

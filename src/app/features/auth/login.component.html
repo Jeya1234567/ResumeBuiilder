@@ -1,0 +1,30 @@
+﻿<div class="auth">
+  <mat-card class="auth-card">
+    <h2>Welcome back</h2>
+    <p>Sign in to continue building your resume.</p>
+
+    <form [formGroup]="form" autocomplete="off" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" />
+        <mat-error *ngIf="form.controls.email.hasError('required')">Email is required</mat-error>
+        <mat-error *ngIf="form.controls.email.hasError('email')">Enter a valid email</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password" type="password" />
+        <mat-error *ngIf="form.controls.password.hasError('required')">Password is required</mat-error>
+        <mat-error *ngIf="form.controls.password.hasError('minlength')">Min 6 characters</mat-error>
+      </mat-form-field>
+
+      <div class="error" *ngIf="error">{{ error }}</div>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="isLoading">Login</button>
+    </form>
+
+    <div class="switch">
+      New here? <a routerLink="/register">Create account</a>
+    </div>
+  </mat-card>
+</div>

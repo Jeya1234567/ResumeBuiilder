@@ -1,0 +1,199 @@
+<div class="templates-page">
+  <div class="page-header">
+    <div>
+      <div class="kicker">Choose your style</div>
+      <h1>Templates Gallery</h1>
+    </div>
+    <button mat-raised-button color="primary" type="button" (click)="continueToBuilder()">
+      Go to Builder
+    </button>
+  </div>
+  <div class="templates-layout">
+    <aside class="filters">
+      <div class="filter-title">Filter by</div>
+      <button class="clear-btn" type="button" (click)="clearStyleFilter()">Clear</button>
+
+      <div class="filter-group">
+        <div class="filter-label">Style</div>
+        <label class="filter-option">
+          <input type="radio" name="style" [checked]="selectedStyle === 'classic'" (change)="selectStyle('classic')" />
+          Classic
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="style" [checked]="selectedStyle === 'modern'" (change)="selectStyle('modern')" />
+          Modern
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="style" [checked]="selectedStyle === 'minimal'" (change)="selectStyle('minimal')" />
+          Minimal
+        </label>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">Theme</div>
+        <div class="theme-row">
+          <button
+            class="theme-swatch"
+            *ngFor="let theme of templateService.themes"
+            [style.background]="theme.accent"
+            [class.active]="templateService.selectedTheme.id === theme.id"
+            (click)="templateService.selectTheme(theme)">
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-group" *ngIf="selectedStyle !== 'all'">
+        <div class="filter-label">Subgroup</div>
+        <div class="subgroup-row">
+          <button
+            class="subgroup-pill"
+            type="button"
+            *ngFor="let subgroup of getSubgroupsForSelectedStyle()"
+            [class.active]="selectedSubgroup === subgroup.id"
+            (click)="selectSubgroup(subgroup.id)">
+            {{ subgroup.label }}
+          </button>
+          <button class="subgroup-clear" type="button" (click)="clearSubgroup()" [disabled]="!selectedSubgroup">
+            All
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-footer">
+        <div class="footer-title">Tips</div>
+        <div class="footer-text">Choose a style first, then pick a template.</div>
+        <div class="footer-text">Photos fit best with Modern styles.</div>
+        <div class="footer-chip">{{ templateService.templates.length }} templates</div>
+      </div>
+    </aside>
+
+    <main class="results">
+      <div class="style-section" *ngFor="let style of filteredStyles">
+        <div class="style-header">
+          <div class="style-title">
+            <span class="style-pill">{{ style.label }}</span>
+          </div>
+          <div class="style-count">{{ getTemplatesByStyle(style.id).length }} templates</div>
+        </div>
+
+        <div class="gallery">
+          <div class="template-card" *ngFor="let template of getTemplatesByStyle(style.id)">
+            <div class="card-header">
+              <div class="template-name">
+                <span class="template-label">{{ template.label }}</span>
+                <div class="badge-row">
+                  <span class="badge" *ngFor="let badge of getBadges(template.id)">{{ badge }}</span>
+                </div>
+              </div>
+              <button mat-stroked-button type="button" (click)="onTemplateSelect(template.id)">
+                Use Template
+              </button>
+            </div>
+
+            <div
+              class="preview-sheet"
+              [attr.data-template]="template.id"
+              [ngStyle]="{'--accent': getAccent(template.id), '--accent-2': getAccent2(template.id)}">
+              <aside class="preview-sidebar">
+                <div class="side-block">
+                  <div class="side-title">Contact</div>
+                  <div class="side-text">{{ sample.email }}</div>
+                  <div class="side-text">{{ sample.phone }}</div>
+                  <div class="side-text">{{ sample.location }}</div>
+                  <div class="side-text">{{ sample.linkedIn }}</div>
+                </div>
+
+                <div class="side-block">
+                  <div class="side-title">Skills</div>
+                  <div class="chip-row">
+                    <span class="chip" *ngFor="let skill of sample.skills">{{ skill }}</span>
+                  </div>
+                </div>
+
+                <div class="side-block">
+                  <div class="side-title">Education</div>
+                  <div class="side-text">{{ sample.education }}</div>
+                  <div class="side-text">{{ sample.educationYear }}</div>
+                  <div class="side-text">{{ sample.educationGrade || '-' }}</div>
+                </div>
+              </aside>
+
+              <div class="preview-body">
+                <div class="header">
+                  <div class="avatar" *ngIf="showPhoto(template.id)">
+                    <img [src]="defaultProfileImage" alt="Profile" />
+                  </div>
+                  <div class="title-stack">
+                    <div class="name">{{ sample.fullName }}</div>
+                    <div class="subtitle">{{ sample.title }}</div>
+                  </div>
+                </div>
+
+                <div class="body-contact">
+                  <div class="contact-row">
+                    <span>{{ sample.email }}</span>
+                    <span>{{ sample.phone }}</span>
+                    <span>{{ sample.location }}</span>
+                  </div>
+                  <div class="contact-row">
+                    <span>{{ sample.linkedIn }}</span>
+                  </div>
+                </div>
+
+                <div class="summary">
+                  {{ sample.summary }}
+                </div>
+
+                <div class="body-grid">
+                  <div class="section section-experience">
+                    <div class="section-title">Experience</div>
+                    <div class="section-rule"></div>
+                    <div class="item" *ngFor="let item of sample.experience">
+                      <div class="item-header">
+                        <div class="item-title">{{ item.role }}</div>
+                        <div class="item-meta">{{ item.company }}</div>
+                        <div class="item-dates">{{ item.dates }}</div>
+                      </div>
+                      <div class="item-body">{{ item.highlights }}</div>
+                    </div>
+                  </div>
+
+                  <div class="section section-projects">
+                    <div class="section-title">Projects</div>
+                    <div class="section-rule"></div>
+                    <div class="item" *ngFor="let item of sample.projects">
+                      <div class="item-header">
+                        <div class="item-title">{{ item.name }}</div>
+                        <div class="item-meta">{{ item.role }}</div>
+                      </div>
+                      <div class="item-body">{{ item.description }}</div>
+                      <div class="item-tech">Tech: {{ item.tech }}</div>
+                    </div>
+                  </div>
+
+                  <div class="section section-skills">
+                    <div class="section-title">Skills</div>
+                    <div class="section-rule"></div>
+                    <div class="chip-row">
+                      <span class="chip" *ngFor="let skill of sample.skills">{{ skill }}</span>
+                    </div>
+                  </div>
+
+                  <div class="section section-education">
+                    <div class="section-title">Education</div>
+                    <div class="section-rule"></div>
+                    <div class="item compact">
+                      <div class="item-title">{{ sample.education }}</div>
+                      <div class="item-meta">{{ sample.educationYear }}</div>
+                      <div class="item-meta">{{ sample.educationGrade || '-' }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
