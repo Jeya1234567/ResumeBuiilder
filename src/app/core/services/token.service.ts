@@ -24,6 +24,5 @@ export class TokenService {
   clear() {
     sessionStorage.clear();
   }
-
-
+ 
 }
