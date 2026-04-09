@@ -58,6 +58,7 @@ export class ResumeService {
         {
           if(payload.id === 0 || payload.id === undefined){
           this.tokenService.setResumeId(res.resume_id.toString());
+          console.log('Personal details saved, resume ID set to:', res.resume_id);
            }
         }
       ) 
