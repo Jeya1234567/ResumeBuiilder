@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { TemplateService } from '../../core/services/template.service';
+import { Store } from '@ngrx/store';
+import { selectTemplate } from './template.action';
+import { selectTheme } from './template.action';
 
 @Component({
   selector: 'app-templates',
@@ -149,7 +152,7 @@ export class TemplatesComponent {
     educationGrade: 'CGPA: 86%'
   };
 
-  constructor(public templateService: TemplateService, private router: Router) {}
+  constructor(public templateService: TemplateService, private router: Router,private store: Store) {}
 
   get filteredStyles() {
     if (this.selectedStyle === 'all') return this.styleSections;
@@ -216,7 +219,7 @@ export class TemplatesComponent {
   }
 
   onTemplateSelect(templateId: string) {
-    this.templateService.selectTemplate(templateId);
+    this.store.dispatch(selectTemplate(templateId));
     this.router.navigateByUrl('/resume');
   }
 

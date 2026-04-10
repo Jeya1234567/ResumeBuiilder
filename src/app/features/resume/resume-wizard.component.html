@@ -264,7 +264,7 @@
 
       <mat-card class="preview">
         <mat-card-title class="card-title">Live Preview</mat-card-title>
-        <div #pdfcontent class="preview-sheet" [attr.data-template]="templateService.selectedTemplate"
+        <div #pdfcontent class="preview-sheet" [attr.data-template]="selectedTemplate$ | async"
              [ngStyle]="{'--accent': templateService.selectedTheme.accent, '--accent-2': templateService.selectedTheme.accent2}">
           <aside class="preview-sidebar">
             <div class="side-block">

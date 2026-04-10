@@ -1,4 +1,4 @@
-import { Component,ViewChild,ElementRef,ChangeDetectorRef,NgZone } from '@angular/core';
+import { Component,ViewChild,ElementRef,ChangeDetectorRef,NgZone,DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -14,6 +14,11 @@ import { AuthService } from '../../core/services/auth.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { TokenService } from '../../core/services/token.service';
+import { Store } from '@ngrx/store';
+import {selectedTemplateState, selectedThemeState} from '../templates/template.selectors';
+import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 
 
 @Component({
@@ -45,6 +50,8 @@ export class ResumeWizardComponent {
   experienceForm: any;
   projectsForm: any;
   technicalForm: any;
+  selectedTemplate$:any;
+  selectedTheme$:any;
   currentSection: 'personal' | 'education' | 'experience' | 'projects' | 'skills' | 'done' = 'personal';
   @ViewChild('pdfcontent') pdfcontent!: ElementRef;
 
@@ -56,7 +63,9 @@ export class ResumeWizardComponent {
     public templateService: TemplateService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private store: Store,
+    private destroyRef: DestroyRef
   ) {
     this.personalForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
@@ -83,10 +92,14 @@ export class ResumeWizardComponent {
     this.technicalForm = this.fb.group({
       skillInput: ['']
     });
+
+    this.selectedTemplate$ = this.store.select(selectedTemplateState);
+
+    this.selectedTheme$ = this.store.select(selectedThemeState);
   }
 
-  showPhotoForSelectedTemplate() {
-    return this.templatesWithPhoto.has(this.templateService.selectedTemplate);
+  async showPhotoForSelectedTemplate() {
+    return this.templatesWithPhoto.has(await firstValueFrom(this.selectedTemplate$));
   }
 
   onProfileImageSelected(event: Event) {
@@ -226,19 +239,21 @@ export class ResumeWizardComponent {
     this.skills = this.skills.filter(s => s !== skill);
   }
 
-  savePersonal() {
+  async savePersonal() {
     if (this.personalForm.invalid) {
       console.log('Personal form is invalid:', this.personalForm.errors);
       this.personalForm.markAllAsTouched();
       return;
     }
-    const templateId = this.templateService.selectedTemplate;
+    const templateId = await firstValueFrom(this.selectedTemplate$);
     this.saveError = '';
     this.isSaving = true;
     const id= this.tokenService.getResumeId() ? Number(this.tokenService.getResumeId()) : 0;
     console.log('id from token service:', id);
     console.log('Saving personal details with template ID:', templateId);
-    this.resumeService.savePersonal({...this.personalForm.value, templateId,id} ).subscribe({
+    this.resumeService.savePersonal({...this.personalForm.value, templateId,id} ).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: () => {
         this.isSaving = false;
         this.setSection('education');
@@ -251,7 +266,6 @@ export class ResumeWizardComponent {
       }
     });
   }
-
   saveEducation() {
     if (this.educationForm.invalid) {
       this.educationForm.markAllAsTouched();
