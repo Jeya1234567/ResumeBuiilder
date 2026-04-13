@@ -1,0 +1,35 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(245, 241, 234, 0.7);
+  backdrop-filter: blur(2px);
+  z-index: 2000;
+}
+
+.loader-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #fffaf3;
+  border: 1px solid #eadfd4;
+  color: #2b2b2b;
+  font-size: 14px;
+  box-shadow: 0 12px 30px rgba(30, 20, 10, 0.18);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d9cbb8;
+  border-top-color: #b07636;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

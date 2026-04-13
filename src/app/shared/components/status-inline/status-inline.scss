@@ -1,0 +1,35 @@
+.inline-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  border: 1px solid transparent;
+}
+
+.inline-status.success {
+  background: #eef8f1;
+  color: #1f5c35;
+  border-color: #cfead8;
+}
+
+.inline-status.success .dot {
+  background: #2e8b57;
+}
+
+.inline-status.error {
+  background: #fff1f1;
+  color: #8b1e1e;
+  border-color: #f0c6c6;
+}
+
+.inline-status.error .dot {
+  background: #c0392b;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}

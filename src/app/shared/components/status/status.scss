@@ -1,0 +1,32 @@
+.top-message {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  z-index: 3000;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.top-message.success {
+  background: #e9f7ee;
+  color: #1f5c35;
+  border: 1px solid #bfe6cf;
+}
+
+.top-message.error {
+  background: #fff1f1;
+  color: #8b1e1e;
+  border: 1px solid #f0c6c6;
+}
+.close {
+  margin-left: 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}

@@ -1,5 +1,5 @@
 import { Component,ViewChild,ElementRef,ChangeDetectorRef,NgZone,DestroyRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule} from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -8,16 +8,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { ResumeService, ExperienceItem, ProjectItem } from '../../core/services/resume.service';
-import { TemplateService, ThemeColor } from '../../core/services/template.service';
+import { TemplateService } from '../../core/services/template.service';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { TokenService } from '../../core/services/token.service';
 import { Store } from '@ngrx/store';
-import {selectedTemplateState, selectedThemeState} from '../templates/template.selectors';
+import {selectedAccent2State, selectedAccentState, selectedTemplateState} from '../templates/template.selectors';
 import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { LoaderService } from '../../core/services/shared/loader.service';
+import { StatusService } from '../../core/services/shared/status.service';
 
 
 
@@ -51,7 +53,8 @@ export class ResumeWizardComponent {
   projectsForm: any;
   technicalForm: any;
   selectedTemplate$:any;
-  selectedTheme$:any;
+  selectedAccent$:any;
+  SelectedAccent2$:any;
   currentSection: 'personal' | 'education' | 'experience' | 'projects' | 'skills' | 'done' = 'personal';
   @ViewChild('pdfcontent') pdfcontent!: ElementRef;
 
@@ -65,7 +68,9 @@ export class ResumeWizardComponent {
     private cdr: ChangeDetectorRef,
     private tokenService: TokenService,
     private store: Store,
-    private destroyRef: DestroyRef
+    private destroyRef: DestroyRef,
+    private loaderService: LoaderService,
+    private statusService: StatusService
   ) {
     this.personalForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
@@ -95,7 +100,8 @@ export class ResumeWizardComponent {
 
     this.selectedTemplate$ = this.store.select(selectedTemplateState);
 
-    this.selectedTheme$ = this.store.select(selectedThemeState);
+    this.selectedAccent$ = this.store.select(selectedAccentState);
+    this.SelectedAccent2$ = this.store.select(selectedAccent2State);
   }
 
   async showPhotoForSelectedTemplate() {
@@ -166,14 +172,6 @@ export class ResumeWizardComponent {
     if (this.educationItems.length > 1) {
       this.educationItems.removeAt(index);
     }
-  }
-
-  selectTemplate(template: string) {
-    this.templateService.selectTemplate(template);
-  }
-
-  selectTheme(theme: ThemeColor) {
-    this.templateService.selectTheme(theme);
   }
 
   createExperience() {
@@ -248,21 +246,24 @@ export class ResumeWizardComponent {
     const templateId = await firstValueFrom(this.selectedTemplate$);
     this.saveError = '';
     this.isSaving = true;
+    this.loaderService.show();
     const id= this.tokenService.getResumeId() ? Number(this.tokenService.getResumeId()) : 0;
-    console.log('id from token service:', id);
-    console.log('Saving personal details with template ID:', templateId);
+    
     this.resumeService.savePersonal({...this.personalForm.value, templateId,id} ).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: () => {
         this.isSaving = false;
-        this.setSection('education');
-        this.cdr.markForCheck();
-        console.log('Personal details saved successfully');
+        this.loaderService.hide();
+        this.setSection('education');     
+        this.statusService.showSuccess('Personal details saved successfully');
+         this.cdr.markForCheck();
       },
       error: (err) => {
         this.isSaving = false;
+        this.loaderService.hide();
         this.saveError = err?.error?.message ?? 'Failed to save personal details';
+        this.statusService.showError(this.saveError);
       }
     });
   }
@@ -273,16 +274,23 @@ export class ResumeWizardComponent {
     }
     this.saveError = '';
     this.isSaving = true;
+    this.loaderService.show();
     const resumeId = this.tokenService.getResumeId() ?? '';
-    this.resumeService.saveEducation(this.educationForm.value.items as any, resumeId).subscribe({
+    this.resumeService.saveEducation(this.educationForm.value.items as any, resumeId).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: () => {
         this.isSaving = false;
+        this.loaderService.hide();
         this.setSection('experience');
+        this.statusService.showSuccess('Education details saved successfully');
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.isSaving = false;
+        this.loaderService.hide();
         this.saveError = err?.error?.message ?? 'Failed to save education details';
+        this.statusService.showError(this.saveError);
       }
     });
   }
@@ -295,16 +303,23 @@ export class ResumeWizardComponent {
     const items = this.experienceItems.value as ExperienceItem[];
     this.saveError = '';
     this.isSaving = true;
+    this.loaderService.show();
     const resumeId = this.tokenService.getResumeId() ?? '';
-    this.resumeService.saveExperience(items, resumeId).subscribe({
+    this.resumeService.saveExperience(items, resumeId).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: () => {
         this.isSaving = false;
+        this.loaderService.hide();
         this.setSection('projects');
+        this.statusService.showSuccess('Experience details saved successfully');
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.isSaving = false;
+        this.loaderService.hide();
         this.saveError = err?.error?.message ?? 'Failed to save experience';
+          this.statusService.showError(this.saveError);
       }
     });
   }
@@ -317,16 +332,23 @@ export class ResumeWizardComponent {
     const items = this.projectItems.value as ProjectItem[];
     this.saveError = '';
     this.isSaving = true;
+    this.loaderService.show();
     const resumeId = this.tokenService.getResumeId() ?? '';
-    this.resumeService.saveProjects(items, resumeId).subscribe({
+    this.resumeService.saveProjects(items, resumeId).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: () => {
         this.isSaving = false;
+        this.loaderService.hide();
         this.setSection('skills');
+        this.statusService.showSuccess('Projects details saved successfully');
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.isSaving = false;
+        this.loaderService.hide();
         this.saveError = err?.error?.message ?? 'Failed to save projects';
+          this.statusService.showError(this.saveError);
       }
     });
   }
@@ -338,16 +360,23 @@ export class ResumeWizardComponent {
     }
     this.saveError = '';
     this.isSaving = true;
+    this.loaderService.show();
     const resumeId = this.tokenService.getResumeId() ?? '';
-    this.resumeService.saveTechnical({ skills: this.skills }, resumeId).subscribe({
+    this.resumeService.saveTechnical({ skills: this.skills }, resumeId).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: () => {
         this.isSaving = false;
+        this.loaderService.hide();
         this.setSection('done');
+        this.statusService.showSuccess('Technical skills saved successfully');
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.isSaving = false;
+        this.loaderService.hide();
         this.saveError = err?.error?.message ?? 'Failed to save skills';
+          this.statusService.showError(this.saveError);
       }
     });
   }
@@ -378,12 +407,18 @@ export class ResumeWizardComponent {
   }
 
   logout() {
-    this.auth.logout().subscribe({
+    this.loaderService.show();
+    this.auth.logout().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: () => {
+        this.loaderService.hide();
         this.router.navigateByUrl('/login');
       },
       error: (err) => {
-       alert('Logout failed: ' + (err?.error?.message ?? 'Unknown error'));
+        this.loaderService.hide();
+       this.saveError = 'Logout failed: ' + (err?.error?.message ?? 'Unknown error');
+        this.statusService.showError(this.saveError);
       }
     });
   }

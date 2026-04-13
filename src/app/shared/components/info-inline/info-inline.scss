@@ -1,0 +1,18 @@
+.inline-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #eef5ff;
+  color: #1f3b63;
+  font-size: 13px;
+  border: 1px solid #d3e4ff;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2f6ad8;
+}

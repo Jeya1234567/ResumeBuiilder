@@ -1,0 +1,4 @@
+<div class="inline-status" [class.success]="type === 'success'" [class.error]="type === 'error'" role="status" aria-live="polite" *ngIf="text">
+  <span class="dot" aria-hidden="true"></span>
+  <span class="text">{{ text }}</span>
+</div>

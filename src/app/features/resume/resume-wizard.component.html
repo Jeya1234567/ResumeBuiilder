@@ -90,7 +90,7 @@
                   </div>
                 </div>
               </div>
-
+        
               <div class="actions">
                 <span class="error" *ngIf="saveError">{{ saveError }}</span>
                 <button mat-raised-button color="primary" type="button" (click)="savePersonal()" [disabled]="isSaving">
@@ -144,7 +144,7 @@
                 </div>
               </div>
               <button class="link" type="button" (click)="addEducation()">+ Add Education</button>
-
+             
               <div class="actions">
                 <button mat-stroked-button type="button" (click)="setSection('personal')">Back</button>
                 <button mat-raised-button color="primary" type="button" (click)="saveEducation()" [disabled]="isSaving">
@@ -184,7 +184,7 @@
                 </div>
               </div>
               <button class="link" type="button" (click)="addExperience()">+ Add Experience</button>
-
+                     
               <div class="actions">
                 <button mat-stroked-button type="button" (click)="setSection('education')">Back</button>
                 <button mat-raised-button color="primary" type="button" (click)="saveExperience()" [disabled]="isSaving">
@@ -220,7 +220,7 @@
                 </div>
               </div>
               <button class="link" type="button" (click)="addProject()">+ Add Project</button>
-
+             
               <div class="actions">
                 <button mat-stroked-button type="button" (click)="setSection('experience')">Back</button>
                 <button mat-raised-button color="primary" type="button" (click)="saveProjects()" [disabled]="isSaving">
@@ -245,7 +245,7 @@
                 <mat-icon matChipRemove>cancel</mat-icon>
               </mat-chip>
             </mat-chip-listbox>
-
+           
             <div class="actions">
               <button mat-stroked-button type="button" (click)="setSection('projects')">Back</button>
               <button mat-raised-button color="primary" type="button" (click)="saveTechnical()" [disabled]="isSaving">
@@ -265,7 +265,7 @@
       <mat-card class="preview">
         <mat-card-title class="card-title">Live Preview</mat-card-title>
         <div #pdfcontent class="preview-sheet" [attr.data-template]="selectedTemplate$ | async"
-             [ngStyle]="{'--accent': templateService.selectedTheme.accent, '--accent-2': templateService.selectedTheme.accent2}">
+             [ngStyle]="{'--accent': selectedAccent$ | async, '--accent-2': SelectedAccent2$ | async}">
           <aside class="preview-sidebar">
             <div class="side-block">
               <div class="side-title">Contact</div>

@@ -1,11 +1,12 @@
 import { createAction } from '@ngrx/store';
+import {ResumeTemplate,ThemeColor} from './templates.component';
 
 export const selectTemplate = createAction(
   '[Template] Select Template',
-  (template: string) => ({ template })
+  (template: ResumeTemplate) => ({ template })
 );
 
 export const selectTheme = createAction(
   '[Template] Select Theme',
-  (theme: string) => ({ theme })
+  (theme: ThemeColor) => ({ theme })
 );

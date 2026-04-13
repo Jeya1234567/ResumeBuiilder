@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,6 +6,25 @@ import { TemplateService } from '../../core/services/template.service';
 import { Store } from '@ngrx/store';
 import { selectTemplate } from './template.action';
 import { selectTheme } from './template.action';
+import { selectedAccent2State, selectedAccentState, selectedThemeState } from './template.selectors';
+import { ChangeDetectorRef } from '@angular/core';
+
+
+
+export interface ResumeTemplate {
+  id: string;
+  template:string;
+  label: string;
+  style: 'classic' | 'modern' | 'minimal';
+}
+
+export interface ThemeColor {
+  id: string;
+  theme:string;
+  label: string;
+  accent: string;
+  accent2: string;
+}
 
 @Component({
   selector: 'app-templates',
@@ -14,7 +33,7 @@ import { selectTheme } from './template.action';
   templateUrl: './templates.component.html',
   styleUrl: './templates.component.scss'
 })
-export class TemplatesComponent {
+export class TemplatesComponent implements OnInit {
   styleSections = [
     { id: 'classic', label: 'Classic' },
     { id: 'modern', label: 'Modern' },
@@ -22,6 +41,11 @@ export class TemplatesComponent {
   ];
   selectedStyle: 'classic' | 'modern' | 'minimal' | 'all' = 'classic';
   selectedSubgroup: string | null = null;
+  templates: ResumeTemplate[] = [];
+  themes: ThemeColor[] = [];
+  selectedTheme$:any;
+  selectedAccent = '#1f4b75';
+  selectedAccent2 = '#94b4d6';
   templatesWithPhoto = new Set<string>([
     'modern',
     'creative',
@@ -152,8 +176,27 @@ export class TemplatesComponent {
     educationGrade: 'CGPA: 86%'
   };
 
-  constructor(public templateService: TemplateService, private router: Router,private store: Store) {}
+  constructor(public templateService: TemplateService, private router: Router,private store: Store, private cdr: ChangeDetectorRef) {
+    this.selectedTheme$ = this.store.select(selectedThemeState);
+  }
 
+  ngOnInit() {
+    this.templateService.loadTemplates().subscribe((templates) => {
+      this.templates = templates;
+      this.cdr.markForCheck();
+    });
+    this.templateService.loadThemes().subscribe((themes) => {
+      this.themes = themes;
+      this.cdr.markForCheck();
+    });
+    this.store.select(selectedAccentState).subscribe((accent) => {
+      if (accent) this.selectedAccent = accent;
+    });
+    this.store.select(selectedAccent2State).subscribe((accent) => {
+      if (accent) this.selectedAccent2 = accent;
+    });
+  }
+ 
   get filteredStyles() {
     if (this.selectedStyle === 'all') return this.styleSections;
     return this.styleSections.filter((s) => s.id === this.selectedStyle);
@@ -163,16 +206,16 @@ export class TemplatesComponent {
     if (style !== 'classic' && style !== 'modern' && style !== 'minimal') {
       return [];
     }
-    const byStyle = this.templateService.templates.filter((t) => t.style === style);
+    const byStyle = this.templates.filter((t) => t.style === style);
     if (!this.selectedSubgroup) return byStyle;
-    return byStyle.filter((t) => (this.templateSubgroups[t.id] ?? []).includes(this.selectedSubgroup as string));
+    return byStyle.filter((t) => (this.templateSubgroups[t.template] ?? []).includes(this.selectedSubgroup as string));
   }
 
   getFilteredCount() {
     if (this.selectedStyle === 'all') {
-      const allTemplates = this.templateService.templates;
+      const allTemplates = this.templates;
       if (!this.selectedSubgroup) return allTemplates.length;
-      return allTemplates.filter((t) => (this.templateSubgroups[t.id] ?? []).includes(this.selectedSubgroup as string)).length;
+      return allTemplates.filter((t) => (this.templateSubgroups[t.template] ?? []).includes(this.selectedSubgroup as string)).length;
     }
     return this.getTemplatesByStyle(this.selectedStyle).length;
   }
@@ -203,11 +246,11 @@ export class TemplatesComponent {
   // Gallery uses a shared default image from assets.
 
   getAccent(templateId: string) {
-    return this.templateAccents[templateId]?.accent ?? this.templateService.selectedTheme.accent;
+    return this.templateAccents[templateId]?.accent ?? this.selectedAccent;
   }
 
   getAccent2(templateId: string) {
-    return this.templateAccents[templateId]?.accent2 ?? this.templateService.selectedTheme.accent2;
+    return this.templateAccents[templateId]?.accent2 ?? this.selectedAccent2;
   }
 
   getBadges(templateId: string) {
@@ -218,9 +261,13 @@ export class TemplatesComponent {
     return this.templatesWithPhoto.has(templateId);
   }
 
-  onTemplateSelect(templateId: string) {
-    this.store.dispatch(selectTemplate(templateId));
+  onTemplateSelect(template: ResumeTemplate) {
+    this.store.dispatch(selectTemplate(template));
     this.router.navigateByUrl('/resume');
+  }
+
+  onThemeSelect(theme: ThemeColor) {
+    this.store.dispatch(selectTheme(theme));
   }
 
   continueToBuilder() {

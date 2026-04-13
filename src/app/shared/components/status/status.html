@@ -1,0 +1,4 @@
+<div class="top-message" [class.success]="type==='success'" [class.error]="type==='error'" *ngIf="text">
+<span class="msg">{{ text }}</span>
+<button class="close" type="button" (click)="close.emit()">×</button>
+</div>

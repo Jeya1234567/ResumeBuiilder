@@ -14,3 +14,12 @@ export const selectedThemeState = createSelector(
     (state) => state.selectedTheme
 );
 
+export const selectedAccentState = createSelector(
+    selectThemeState,
+    (state) => state.accent
+);
+
+export const selectedAccent2State = createSelector(
+    selectThemeState,
+    (state) => state.accent2
+);

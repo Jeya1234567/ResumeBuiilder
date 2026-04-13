@@ -34,10 +34,10 @@
         <div class="theme-row">
           <button
             class="theme-swatch"
-            *ngFor="let theme of templateService.themes"
+            *ngFor="let theme of themes"
             [style.background]="theme.accent"
-            [class.active]="templateService.selectedTheme.id === theme.id"
-            (click)="templateService.selectTheme(theme)">
+            [class.active]="(selectedTheme$ | async) === theme.theme"
+            (click)="onThemeSelect(theme)">
           </button>
         </div>
       </div>
@@ -63,7 +63,7 @@
         <div class="footer-title">Tips</div>
         <div class="footer-text">Choose a style first, then pick a template.</div>
         <div class="footer-text">Photos fit best with Modern styles.</div>
-        <div class="footer-chip">{{ templateService.templates.length }} templates</div>
+        <div class="footer-chip">{{ getFilteredCount() }} templates</div>
       </div>
     </aside>
 
@@ -82,18 +82,18 @@
               <div class="template-name">
                 <span class="template-label">{{ template.label }}</span>
                 <div class="badge-row">
-                  <span class="badge" *ngFor="let badge of getBadges(template.id)">{{ badge }}</span>
+                  <span class="badge" *ngFor="let badge of getBadges(template.template)">{{ badge }}</span>
                 </div>
               </div>
-              <button mat-stroked-button type="button" (click)="onTemplateSelect(template.id)">
+              <button mat-stroked-button type="button" (click)="onTemplateSelect(template)">
                 Use Template
               </button>
             </div>
 
             <div
               class="preview-sheet"
-              [attr.data-template]="template.id"
-              [ngStyle]="{'--accent': getAccent(template.id), '--accent-2': getAccent2(template.id)}">
+              [attr.data-template]="template.template"
+              [ngStyle]="{'--accent': getAccent(template.template), '--accent-2': getAccent2(template.template)}">
               <aside class="preview-sidebar">
                 <div class="side-block">
                   <div class="side-title">Contact</div>
@@ -120,7 +120,7 @@
 
               <div class="preview-body">
                 <div class="header">
-                  <div class="avatar" *ngIf="showPhoto(template.id)">
+                  <div class="avatar" *ngIf="showPhoto(template.template)">
                     <img [src]="defaultProfileImage" alt="Profile" />
                   </div>
                   <div class="title-stack">

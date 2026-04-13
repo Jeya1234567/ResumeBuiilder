@@ -1,1 +1,3 @@
-﻿<router-outlet />
+﻿<app-loader-overlay [show]="(loading$ | async) ?? false"></app-loader-overlay>
+<app-status [type]="(status$ | async)?.type ?? 'success'" [text]="(status$ | async)?.text ?? ''" (close)="clearStatus()"></app-status>
+<router-outlet />
